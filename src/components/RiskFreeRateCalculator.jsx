@@ -121,10 +121,13 @@ export default function RiskFreeRateCalculator({ onRateCalculated }) {
       <div className="forward-rate-section">
         <h3>주단위 선도이자율 계산</h3>
         <ForwardRateCalculator 
-          spotRates={tableData[0]
-            .slice(4)
-            .map(rate => parseFloat(rate) || 0)
-            .filter(rate => !isNaN(rate))} 
+          riskFreeRates={tableData[0] ? headers.slice(4).map((tenor, index) => {
+            const rate = tableData[0][index + 4];
+            return {
+              tenor,
+              rate: rate ? parseFloat(rate) : null
+            };
+          }).filter(item => item.rate !== null) : []}
         />
       </div>
     </div>

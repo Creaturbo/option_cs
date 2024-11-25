@@ -1,102 +1,62 @@
-.forward-rate-calculator {
-    margin-top: 32px;
-    padding-top: 24px;
-    border-top: 1px solid var(--apple-gray-200);
-  }
-  
-  .horizontal-rates-table {
-    margin-top: 24px;
-    overflow-x: auto;
-  }
-  
-  .horizontal-rates-table table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: center;
-  }
-  
-  .horizontal-rates-table th,
-  .horizontal-rates-table td {
-    padding: 12px;
-    border: 1px solid var(--apple-gray-200);
-    min-width: 100px;
-  }
-  
-  .horizontal-rates-table th {
-    background-color: var(--apple-gray-50);
-    font-weight: 500;
-  }
-  
-  .date-inputs {
-    display: flex;
-    gap: 24px;
-    align-items: flex-end;
-    margin-bottom: 24px;
-  }
-  
-  .results-table {
-    margin-top: 24px;
-    width: fit-content;
-  }
-  
-  .results-table table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .results-table th,
-  .results-table td {
-    padding: 12px;
-    text-align: center;
-    border: 1px solid var(--apple-gray-200);
-  }
-  
-  .results-table th {
-    background-color: var(--apple-gray-50);
-    font-weight: 500;
-  }
-  
-  .calculator-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-  }
-  
-  .download-button {
-    background-color: #217346; /* Excel 색상 */
-    color: white;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .download-button:hover {
-    background-color: #1e6b3e;
-  }
-  
-  .rate-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-  
-  .rate-table th,
-  .rate-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: right;
-  }
-  
-  .rate-table th {
-    background-color: #f5f5f5;
-  }
-  
-  .formula-cell {
-    background-color: #fff2cc;
-  } 
+.calculator-container {
+  padding: 20px;
+}
+
+.date-inputs {
+  margin: 20px 0;
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.input-group label {
+  font-size: 14px;
+  color: #666;
+}
+
+.input-group input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.calculate-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.calculate-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.results-section {
+  margin-top: 30px;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.results-table th,
+.results-table td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.results-table th {
+  background-color: #f8f9fa;
+} 
