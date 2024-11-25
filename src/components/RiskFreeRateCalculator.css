@@ -1,0 +1,193 @@
+.risk-free-rate-calculator {
+    position: relative;
+    padding-top: 120px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    width: fit-content;
+    min-width: 100%;
+  }
+  
+  .calculator-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 24px;
+    position: relative;
+    text-align: center;
+  }
+  
+  .calculator-header h3 {
+    margin: 0 0 8px 0;
+    color: var(--apple-gray-900);
+  }
+  
+  .calculator-header .description {
+    margin: 0;
+    color: var(--apple-gray-600);
+  }
+  
+  .table-wrapper {
+    position: relative;
+    margin-top: 20px;
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  .table-container {
+    width: fit-content;
+    min-width: 100%;
+  }
+  
+  .yields-input-table {
+    width: 100%;
+    border-collapse: collapse;
+    white-space: nowrap;
+  }
+  
+  .yields-input-table th,
+  .yields-input-table td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid var(--apple-gray-200);
+    min-width: 80px;
+  }
+  
+  .yields-input-table th {
+    background-color: var(--apple-blue-light);
+    color: var(--apple-blue);
+    font-weight: 600;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  
+  .yields-input-table td {
+    text-align: center;
+    position: relative;
+    user-select: none;
+    cursor: cell;
+  }
+  
+  .yields-input-table td.selected {
+    background-color: var(--apple-blue-light) !important;
+  }
+  
+  .yields-input-table td.selected .cell-content {
+    background-color: rgba(0, 122, 255, 0.1);
+  }
+  
+  .yields-input-table td:first-child,
+  .yields-input-table td:nth-child(2),
+  .yields-input-table td:nth-child(3) {
+    background-color: var(--apple-gray-50);
+  }
+  
+  .cell-content {
+    min-height: 21px;
+  }
+  
+  .selected-rate {
+    margin-top: 24px;
+    padding: 20px;
+    background: var(--apple-gray-50);
+    border-radius: 12px;
+    text-align: center;
+  }
+  
+  .selected-rate p {
+    margin: 0 0 8px 0;
+    color: var(--apple-gray-700);
+  }
+  
+  .selected-rate strong {
+    font-size: 24px;
+    color: var(--apple-blue);
+  }
+  
+  .yields-input-table.dragging {
+    user-select: none;
+  }
+  
+  .cell {
+    position: relative;
+    background: white;
+    transition: background-color 0.2s;
+  }
+  
+  .cell:hover {
+    background-color: var(--apple-gray-50);
+  }
+  
+  .cell-content {
+    padding: 8px;
+    min-height: 20px;
+  }
+  
+  .yields-input-table td.fixed-cell {
+    background-color: var(--apple-gray-50);
+    color: var(--apple-gray-700);
+    font-weight: 500;
+  }
+  
+  .yields-input-table td.editable-cell {
+    background-color: white;
+    cursor: cell;
+  }
+  
+  .yields-input-table td.editable-cell:hover {
+    background-color: var(--apple-blue-light);
+  }
+  
+  .file-upload-section {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background-color: var(--system-background);
+    padding: 20px 0;
+    z-index: 1;
+  }
+  
+  .upload-button {
+    background-color: var(--apple-blue);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 980px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .upload-button:hover {
+    background-color: var(--apple-blue-dark);
+    transform: translateY(-1px);
+  }
+  
+  .upload-button i {
+    font-size: 16px;
+  }
+  
+  .hidden-input {
+    display: none;
+  }
+  
+  .description {
+    color: var(--apple-gray-700);
+    font-size: 14px;
+    margin: 0;
+  }
+  
+  .forward-rate-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--apple-gray-200);
+  }

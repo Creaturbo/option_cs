@@ -1,0 +1,116 @@
+:root {
+  /* Apple 기본 색상 시스템 */
+  --apple-gray-50: #fbfbfd;
+  --apple-gray-100: #f5f5f7;
+  --apple-gray-200: #e8e8ed;
+  --apple-gray-300: #d2d2d7;
+  --apple-gray-500: #86868b;
+  --apple-gray-700: #6e6e73;
+  --apple-gray-900: #1d1d1f;
+  --apple-blue: #0066cc;
+  --apple-blue-light: rgba(0, 102, 204, 0.1);
+  --system-background: #ffffff;
+  
+  /* 기본 폰트 설정 */
+  font-family: "SF Pro KR", "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  line-height: 1.47059;
+  font-weight: 400;
+  letter-spacing: -0.022em;
+  
+  /* 시스템 설정 */
+  color-scheme: light;
+  color: var(--apple-gray-900);
+  background-color: var(--apple-gray-50);
+  
+  /* 렌더링 최적화 */
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 400;
+  color: var(--apple-blue);
+  text-decoration: none;
+  transition: color 0.3s cubic-bezier(0.4, 0.4, 0, 1);
+}
+
+a:hover {
+  color: var(--apple-blue-dark);
+}
+
+body {
+  margin: 0;
+  display: flex;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--apple-gray-50);
+}
+
+h1 {
+  font-size: 48px;
+  line-height: 1.08349;
+  font-weight: 600;
+  letter-spacing: -0.003em;
+  color: var(--apple-gray-900);
+}
+
+button {
+  border-radius: 980px;
+  border: none;
+  padding: 12px 22px;
+  font-size: 17px;
+  font-weight: 400;
+  font-family: inherit;
+  background-color: var(--apple-blue);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0.4, 0, 1);
+  letter-spacing: -0.022em;
+}
+
+button:hover {
+  background-color: var(--apple-blue-dark);
+  transform: translateY(-1px);
+}
+
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--apple-blue-light);
+}
+
+/* 다크 모드 지원 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --system-background: #000000;
+    --apple-gray-50: #1d1d1f;
+    --apple-gray-100: #2d2d2f;
+    --apple-gray-200: #3d3d3f;
+    --apple-gray-900: #f5f5f7;
+    color: var(--apple-gray-900);
+    background-color: var(--system-background);
+  }
+  
+  button {
+    background-color: var(--apple-blue);
+    color: white;
+  }
+  
+  button:hover {
+    background-color: var(--apple-blue-dark);
+  }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 734px) {
+  h1 {
+    font-size: 40px;
+    line-height: 1.1;
+  }
+  
+  button {
+    padding: 10px 20px;
+    font-size: 15px;
+  }
+} 
