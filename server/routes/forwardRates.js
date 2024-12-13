@@ -1,60 +1,92 @@
 const express = require('express');
 const router = express.Router();
-const XLSX = require('xlsx');
+const { spawn } = require('child_process');
 const path = require('path');
 
 router.post('/calculate', async (req, res) => {
   try {
     const { riskFreeRates, startDate, endDate } = req.body;
     
-    // 엑셀 파일 경로 설정
-    const excelPath = path.join("C:", "Users", "user", "OneDrive", "바탕 화면", "P-job", "옵셩평가사이트", "Bootstrapping.xlsx");
+    console.log('받은 데이터:', { riskFreeRates, startDate, endDate });
+
+    const pythonProcess = spawn('python', [
+      path.resolve(__dirname, '../scripts/run_excel_macro.py'),
+      JSON.stringify({
+        riskFreeRates,
+        startDate,
+        endDate
+      })
+    ]);
+
+    let result = '';
+    let errorOutput = '';
     
-    // 엑셀 파일 읽기
-    const workbook = XLSX.readFile(excelPath);
-    const worksheet = workbook.Sheets[workbook.SheetNames[0]]; // 첫 번째 시트 사용
-    
-    // B열에 국고채 금리 데이터 입력
-    Object.values(riskFreeRates).forEach((rate, index) => {
-      const cell = XLSX.utils.encode_cell({ r: index + 1, c: 1 }); // B2부터 시작
-      worksheet[cell] = { v: rate / 100, t: 'n' }; // 퍼센트 값으로 변환
+    pythonProcess.stdout.on('data', (data) => {
+      result += data.toString();
     });
-    
-    // 평가기간의 주수 계산
-    const startDateTime = new Date(startDate);
-    const endDateTime = new Date(endDate);
-    const weeksDiff = Math.ceil((endDateTime - startDateTime) / (7 * 24 * 60 * 60 * 1000));
-    
-    // 계산 결과 추출 (30~33행)
-    const results = [];
-    for (let i = 0; i < weeksDiff; i++) {
-      const yearlyRateCell = XLSX.utils.encode_cell({ r: 29, c: i }); // 30행
-      const weeklyRateCell = XLSX.utils.encode_cell({ r: 30, c: i }); // 31행
-      const discountFactorCell = XLSX.utils.encode_cell({ r: 31, c: i }); // 32행
-      
-      results.push({
-        week: i + 1,
-        yearlyRate: worksheet[yearlyRateCell]?.v || 0,
-        weeklyRate: worksheet[weeklyRateCell]?.v || 0,
-        discountFactor: worksheet[discountFactorCell]?.v || 0
+
+    pythonProcess.stderr.on('data', (data) => {
+      errorOutput += data.toString();
+    });
+
+    pythonProcess.on('error', (error) => {
+      console.error('Python 프로세스 실행 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Python 스크립트 실행 중 오류가 발생했습니다.'
       });
-    }
-    
-    // 결과 저장
-    XLSX.writeFile(workbook, excelPath);
-    
-    // 결과 반환
-    res.json({
-      startDate,
-      endDate,
-      weeksDiff,
-      results
     });
-    
+
+    pythonProcess.on('close', (code) => {
+      console.log('Python 스크립트 종료 코드:', code);
+      console.log('Python 스크립트 결과:', result);
+      if (errorOutput) console.error('Python 오류:', errorOutput);
+
+      try {
+        if (code !== 0) {
+          throw new Error(`Python 스크립트가 오류 코드 ${code}로 종료되었습니다.`);
+        }
+
+        const parsedResult = JSON.parse(result.trim());
+        
+        if (!parsedResult.success || !parsedResult.results) {
+          throw new Error('유효하지 않은 결과 형식입니다.');
+        }
+
+        // 결과 데이터 변환
+        const [weeks, annualRates, weeklyRates, discountFactors] = parsedResult.results;
+        const formattedResults = [];
+
+        // 첫 번째 행(weeks)을 제외하고 데이터 처리
+        for (let i = 1; i < weeks.length; i++) {
+          formattedResults.push({
+            week: weeks[i],
+            annualizedRate: annualRates[i],
+            weeklyRate: weeklyRates[i],
+            discountFactor: discountFactors[i]
+          });
+        }
+
+        res.json({
+          success: true,
+          results: formattedResults,
+          filename: parsedResult.filename
+        });
+      } catch (error) {
+        console.error('결과 처리 중 오류:', error);
+        res.status(500).json({
+          success: false,
+          error: '결과 처리 중 오류가 발생했습니다: ' + error.message
+        });
+      }
+    });
   } catch (error) {
-    console.error('계산 오류:', error);
-    res.status(500).json({ error: error.message });
+    console.error('요청 처리 중 오류:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
   }
 });
 
-module.exports = router; 
+module.exports = router;

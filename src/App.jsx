@@ -4,6 +4,7 @@ import NodeVisualization from './components/NodeVisualization'
 import VolatilityCalculator from './components/VolatilityCalculator'
 import './components/VolatilityCalculator.css'
 import RiskFreeRateCalculator from './components/RiskFreeRateCalculator'
+import ForwardRateCalculator from './components/ForwardRateCalculator'
 
 function App() {
   const [spotPrice, setSpotPrice] = useState(95000)    // 현재 주가
@@ -15,11 +16,17 @@ function App() {
   const [riskFreeRate, setRiskFreeRate] = useState(9)
   const [dividend, setDividend] = useState(5)
   const [shares, setShares] = useState(1000)
+  const [riskFreeData, setRiskFreeData] = useState(null);
   
-  // 계산 결과 상태
+  // 계산 결과 상���
   const [calculationResults, setCalculationResults] = useState(null)
   const [showResults, setShowResults] = useState(false)
   const [activeTab, setActiveTab] = useState('calculator')
+
+  // 데이터 변경 확인을 위한 useEffect 추가
+  useEffect(() => {
+    console.log('App의 riskFreeData 변경:', riskFreeData);
+  }, [riskFreeData]);
 
   // 계산 함수 추가/수정
   const calculateWeeks = () => {
@@ -140,6 +147,11 @@ function App() {
   const handleRateCalculated = (rate) => {
     setRiskFreeRate(rate)
   }
+
+  const handleRiskFreeDataCalculated = (data) => {
+    console.log('국고채 데이터 수신:', data);
+    setRiskFreeData(data);
+  };
 
   return (
     <div className="app-container">
@@ -262,7 +274,7 @@ function App() {
                     <table>
                       <tbody>
                         <tr>
-                          <td>주단위 총 노드 수</td>
+                          <td>주단위 총 노 수</td>
                           <td>{calculationResults.totalNodes}</td>
                         </tr>
                         <tr>
@@ -325,7 +337,7 @@ function App() {
           ) : activeTab === 'volatility' ? (
             <VolatilityCalculator onVolatilityCalculated={handleVolatilityCalculated} />
           ) : (
-            <RiskFreeRateCalculator onRateCalculated={handleRateCalculated} />
+            <RiskFreeRateCalculator onRateCalculated={handleRateCalculated} onDataCalculated={handleRiskFreeDataCalculated} />
           )}
 
           {showResults && activeTab === 'calculator' && (

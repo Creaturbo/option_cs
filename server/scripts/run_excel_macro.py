@@ -1,40 +1,87 @@
 import sys
 import json
-import win32com.client
 import os
+import shutil
+import logging
+import xlwings as xw
+from datetime import datetime
 
-def run_excel_macro(input_data):
+# 로깅 설정
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+def calculate_weeks_between(start_date, end_date):
+    """
+    두 날짜 사이의 주차 수 계산
+    """
+    from datetime import datetime
+    
+    start = datetime.strptime(start_date, '%Y-%m-%d')
+    end = datetime.strptime(end_date, '%Y-%m-%d')
+    
+    # 날짜 차이를 주 단위로 계산
+    weeks = (end - start).days // 7
+    return weeks + 1  # 시작일 포함
+
+def main():
     try:
-        excel = win32com.client.Dispatch("Excel.Application")
-        excel.Visible = False
+        input_str = sys.argv[1]
+        input_data = json.loads(input_str)
         
-        # 엑셀 파일 경로
-        workbook_path = os.path.join(os.path.dirname(__file__), '../excel-templates/your_file.xlsx')
-        workbook = excel.Workbooks.Open(workbook_path)
+        base_dir = "C:\\backend"
+        original_file = os.path.join(base_dir, "Bootstrapping.xlsm")
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        copy_file = os.path.join(base_dir, f"Bootstrapping_copy_{timestamp}.xlsm")
         
-        # 입력 데이터 설정
-        sheet = workbook.Sheets("Input")  # 입력 시트 이름
-        for key, value in input_data.items():
-            sheet.Range(key).Value = value
+        logger.debug(f"원본 파일: {original_file}")
+        logger.debug(f"복사본 파일: {copy_file}")
+        
+        shutil.copy2(original_file, copy_file)
+        
+        app = xw.App(visible=False)
+        app.display_alerts = False
+        
+        try:
+            wb = app.books.open(copy_file)
+            sheet = wb.sheets[0]
             
-        # VBA 매크로 실행
-        excel.Run("YourMacroName")
-        
-        # 결과 읽기
-        result_sheet = workbook.Sheets("Output")  # 결과 시트 이름
-        results = {
-            "calculated_values": result_sheet.Range("A1:A10").Value
-        }
-        
-        workbook.Close(False)
-        excel.Quit()
-        
-        return results
-        
+            # 국고채 데이터 업데이트
+            headers = input_data['riskFreeRates']['headers']
+            values = input_data['riskFreeRates']['values']
+            
+            for col, (header, value) in enumerate(zip(headers, values), start=2):
+                sheet.range(f"{chr(64+col)}1").value = header
+                sheet.range(f"{chr(64+col)}2").value = float(value)
+            
+            wb.save()
+            
+            # 주차 계산
+            total_weeks = calculate_weeks_between(input_data['startDate'], input_data['endDate'])
+            
+            # 결과 추출 (30-33행)
+            results = []
+            for row in range(30, 34):
+                row_data = sheet.range(f"A{row}:Z{row}").value[:total_weeks]
+                results.append(row_data)
+            
+            print(json.dumps({
+                "success": True,
+                "results": results,
+                "filename": os.path.basename(copy_file)
+            }))
+            
+        finally:
+            if 'wb' in locals():
+                wb.save()
+                wb.close()
+            app.quit()
+            
     except Exception as e:
-        return {"error": str(e)}
+        logger.error(f"오류 발생: {str(e)}", exc_info=True)
+        print(json.dumps({
+            "success": False,
+            "error": str(e)
+        }))
 
 if __name__ == "__main__":
-    input_data = json.loads(sys.argv[1])
-    result = run_excel_macro(input_data)
-    print(json.dumps(result)) 
+    main()

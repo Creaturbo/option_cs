@@ -5,42 +5,65 @@ const path = require('path');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
+
 app.use(express.json());
 
-// 엑셀 계산 요청을 처리하는 라우트
 app.post('/api/calculate', async (req, res) => {
   try {
     const { inputData } = req.body;
     
-    // Python 스크립트를 사용하여 엑셀 매크로 실행
     const pythonProcess = spawn('python', [
-      path.join(__dirname, 'scripts/run_excel_macro.py'),
+      path.join(__dirname, 'scripts', 'run_excel_macro.py'),
       JSON.stringify(inputData)
     ]);
 
-    let result = '';
+    let resultData = '';
+    let errorData = '';
 
     pythonProcess.stdout.on('data', (data) => {
-      result += data.toString();
+      resultData += data.toString();
     });
 
     pythonProcess.stderr.on('data', (data) => {
-      console.error(`Error: ${data}`);
+      errorData += data.toString();
+      console.error(`Python Error: ${data}`);
     });
 
     pythonProcess.on('close', (code) => {
       if (code !== 0) {
-        return res.status(500).json({ error: 'Calculation failed' });
+        console.error('Python process exited with code:', code);
+        return res.status(500).json({ 
+          error: 'Calculation failed', 
+          details: errorData 
+        });
       }
-      res.json({ result: JSON.parse(result) });
+
+      try {
+        const result = JSON.parse(resultData);
+        res.json(result);
+      } catch (e) {
+        res.status(500).json({ 
+          error: 'Failed to parse Python output',
+          details: resultData
+        });
+      }
     });
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Server error:', error);
+    res.status(500).json({ 
+      error: error.message,
+      details: error.stack 
+    });
   }
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`서버가 포트 ${PORT}에서 실행 중입니다`);
 }); 

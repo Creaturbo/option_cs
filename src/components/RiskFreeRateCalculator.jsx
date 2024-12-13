@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx'
 import './RiskFreeRateCalculator.css'
 import ForwardRateCalculator from './ForwardRateCalculator'
 
-export default function RiskFreeRateCalculator({ onRateCalculated }) {
+export default function RiskFreeRateCalculator({ onDataCalculated, onRateCalculated }) {
   const [headers, setHeaders] = useState(['종류', '종류명', '신용등급', '고시기관', '3월', '6월', '9월', '1년', '1년6월', '2년', '2년6월', '3년', '4년', '5년', '7년', '10년', '15년', '20년', '30년', '50년'])
   
   const [tableData, setTableData] = useState([
@@ -23,49 +23,38 @@ export default function RiskFreeRateCalculator({ onRateCalculated }) {
         const worksheet = workbook.Sheets[workbook.SheetNames[0]]
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
 
-        // 국고채권 데이터 찾기
         const govBondData = jsonData.find(row => 
           row[0] === '국채' && String(row[1]).includes('국고채권')
         )
 
         if (govBondData) {
-          // 실제 데이터가 있는 컬럼만 필터링
-          const filteredData = govBondData.filter((cell, index) => {
-            if (index < 4) return true // 첫 4개 컬럼은 항상 포함
-            return cell !== undefined && cell !== ''
+          const numericData = govBondData.slice(4).map(value => {
+            if (!value && value !== 0) return 0
+            
+            const num = parseFloat(String(value).replace(/,/g, ''))
+            return isNaN(num) ? 0 : num
           })
 
-          // 헤더 동적 생성
-          const newHeaders = ['종류', '종류명', '신용등급', '고시기관']
-          const periods = ['3월', '6월', '9월', '1년', '1년6월', '2년', '2년6월', '3년', '4년', '5년', '7년', '10년', '15년', '20년', '30년', '50년']
+          console.log('추출된 국고채 데이터:', numericData)
+
+          setTableData([govBondData])
           
-          // 데이터 길이에 맞춰 헤더 추가
-          for (let i = 4; i < filteredData.length; i++) {
-            if (i - 4 < periods.length) {
-              newHeaders.push(periods[i - 4])
-            }
+          const riskFreeRatesData = {
+            headers: headers.slice(4),
+            values: numericData
           }
-
-          setHeaders(newHeaders)
-          setTableData([filteredData])
-
-          // 3년물 금리 추출 (헤더 위치 기준으로 찾기)
-          const threeYearIndex = newHeaders.indexOf('3년')
-          if (threeYearIndex !== -1) {
-            const threeYearYield = parseFloat(filteredData[threeYearIndex])
-            if (!isNaN(threeYearYield)) {
-              onRateCalculated(threeYearYield)
-            }
-          }
+          
+          onDataCalculated(riskFreeRatesData)
+        } else {
+          throw new Error('국고채 데이터를 찾을 수 없습니다.')
         }
       } catch (error) {
-        console.error('파일 처리 중 오류 발생:', error)
-        alert('파일 처리 중 오류가 발생했습니다.')
+        console.error('파일 처리 오류:', error)
+        alert('파일 처리 중 오류가 발생했습니다: ' + error.message)
       }
     }
 
     reader.readAsArrayBuffer(file)
-    e.target.value = ''
   }
 
   return (
@@ -121,13 +110,10 @@ export default function RiskFreeRateCalculator({ onRateCalculated }) {
       <div className="forward-rate-section">
         <h3>주단위 선도이자율 계산</h3>
         <ForwardRateCalculator 
-          riskFreeRates={tableData[0] ? headers.slice(4).map((tenor, index) => {
-            const rate = tableData[0][index + 4];
-            return {
-              tenor,
-              rate: rate ? parseFloat(rate) : null
-            };
-          }).filter(item => item.rate !== null) : []}
+          riskFreeRates={{
+            headers: headers.slice(4),
+            values: tableData[0]?.slice(4) || []
+          }}
         />
       </div>
     </div>
